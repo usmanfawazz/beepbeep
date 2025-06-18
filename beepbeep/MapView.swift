@@ -25,6 +25,7 @@ struct MapView: View {
                     print("Location not available.")
                 }
             }
+            //button design stuff
             .padding()
             .background(Color.blue)
             .cornerRadius(10)
@@ -33,7 +34,7 @@ struct MapView: View {
         }
         .onAppear {
             liftPoints = LiftCoordinatesStorage.shared.load()
-            markedLocations = liftPoints.map { $0.coordinate }
+            markedLocations = liftPoints.map { $0.coordinate } //convert to coordinates and save
         }
     }
 }

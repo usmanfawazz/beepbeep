@@ -1,7 +1,7 @@
 import Foundation
 
 class LiftCoordinatesStorage {
-    static let shared = LiftCoordinatesStorage()
+    static let shared = LiftCoordinatesStorage() //for access anyehere in app avoid data copies
     private let fileName = "liftpoints.json"
 
     private var fileURL: URL {
@@ -10,7 +10,7 @@ class LiftCoordinatesStorage {
 
     func save(_ points: [LiftPoint]) {
         do {
-            let data = try JSONEncoder().encode(points)
+            let data = try JSONEncoder().encode(points) //convert array to raw data with errir handling
             try data.write(to: fileURL)
             print("Lift points saved.")
         } catch {
