@@ -10,10 +10,9 @@ struct MapView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            MapKitWrapper(locations: $markedLocations)
+            MapKitWrapper(locations: $markedLocations, points: $liftPoints)
                 .edgesIgnoringSafeArea(.all)
-            
-
+        
         }
         .onAppear {
             liftPoints = LiftCoordinatesStorage.shared.load()
