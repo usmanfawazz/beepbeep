@@ -12,6 +12,7 @@ struct MapView: View {
         ZStack(alignment: .bottom) {
             MapKitWrapper(locations: $markedLocations)
                 .edgesIgnoringSafeArea(.all)
+            
 
         }
         .onAppear {
