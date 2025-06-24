@@ -7,9 +7,9 @@
 		<string>audio</string>
 		<string>location</string>
 	</array>
-    
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>This app needs your location to log coordinates.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs your location to log coordinates.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app uses your microphone to detect lift sounds</string>
 </dict>
 </plist>
-

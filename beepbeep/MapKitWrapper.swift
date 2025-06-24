@@ -12,6 +12,7 @@ struct MapKitWrapper: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: MKMapView, context: Context) {
+        uiView.removeAnnotations(uiView.annotations)
 
         for coord in locations {
             let annotation = MKPointAnnotation()
@@ -19,15 +20,20 @@ struct MapKitWrapper: UIViewRepresentable {
             uiView.addAnnotation(annotation)
         }
 
-        if let last = locations.last { //map centering on available locations
+        if let last = locations.last, !context.coordinator.didCenter { //map centering based on user location
             let region = MKCoordinateRegion(
                 center: last,
                 span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
             )
-            uiView.setRegion(region, animated: true) //smoother centering
+            uiView.setRegion(region, animated: true)
+            context.coordinator.didCenter = true
         }
     }
+
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        return Coordinator()
+    }
+    class Coordinator {
+        var didCenter = false
     }
 }

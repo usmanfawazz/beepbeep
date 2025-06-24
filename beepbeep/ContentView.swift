@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum AppSection: String, CaseIterable, Identifiable { //choosing from different secitons
-    case map = "Mark Location"
+    case map = "Map"
     case saved = "View Saved Points"
 
     var id: String { rawValue }
