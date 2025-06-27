@@ -42,7 +42,8 @@ struct LiftCoordinatesView: View {
                 label = formatter.string(from: date)
             }
             
-            return (label, grouped[date] ?? [])
+            let sortedPoints = (grouped[date] ?? []).sorted(by: { $0.timestamp > $1.timestamp })
+            return (label, sortedPoints)
         }
     }
 }
