@@ -17,7 +17,11 @@ class SoundClassifier: NSObject, ObservableObject {
 
         analyzer = SNAudioStreamAnalyzer(format: inputFormat)
 
-        guard let model = try? VarioSound_Classification_1(configuration: MLModelConfiguration()).model,
+        //using CPU-only config
+        let config = MLModelConfiguration()
+        config.computeUnits = .cpuOnly
+
+        guard let model = try? VarioSound_Classification_1(configuration: config).model,
               let request = try? SNClassifySoundRequest(mlModel: model) else {
             fatalError("error loading ml model")
         }
@@ -56,22 +60,21 @@ class SoundClassifier: NSObject, ObservableObject {
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
     }
-}
 
-class SoundResultsObserver: NSObject, SNResultsObserving {
-    private let callback: (String) -> Void
+    class SoundResultsObserver: NSObject, SNResultsObserving {
+        private let callback: (String) -> Void
 
-    init(callback: @escaping (String) -> Void) {
-        self.callback = callback
+        init(callback: @escaping (String) -> Void) {
+            self.callback = callback
+        }
+
+        func request(_ request: SNRequest, didProduce result: SNResult) {
+            guard let classification = result as? SNClassificationResult,
+                  let topResult = classification.classifications.first,
+                  topResult.confidence > 0.85 else { return }
+
+            callback(topResult.identifier)
+        }
     }
 
-    func request(_ request: SNRequest, didProduce result: SNResult) {
-        guard let classification = result as? SNClassificationResult,
-              let topResult = classification.classifications.first,
-              topResult.confidence > 0.85 else { return }
-
-        callback(topResult.identifier)
-    }
 }
-
-
