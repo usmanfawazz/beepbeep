@@ -27,39 +27,40 @@ struct LiftCoordinatesView: View {
     }
 
     private var groupedPoints: [(String, [(String, [LiftPoint])])] {
-        let groupedByDate = Dictionary(grouping: points) { point in
-            Calendar.current.startOfDay(for: point.timestamp)
+        let groupedByDate = Dictionary(grouping: points) {
+            Calendar.current.startOfDay(for: $0.timestamp)
         }
 
         let sortedDates = groupedByDate.keys.sorted(by: >)
 
         return sortedDates.map { date in
-            let dateLabel: String
-            if Calendar.current.isDateInToday(date) {
-                dateLabel = "Today"
-            } else if Calendar.current.isDateInYesterday(date) {
-                dateLabel = "Yesterday"
-            } else {
-                let formatter = DateFormatter()
-                formatter.dateStyle = .medium
-                dateLabel = formatter.string(from: date)
-            }
-
-            // Group by sessionID and sort descending by latest timestamp
+            let dateLabel = formattedDate(date)
             let sessions = Dictionary(grouping: groupedByDate[date] ?? []) { $0.sessionID ?? UUID() }
+
             let sortedSessions = sessions.sorted {
-                ($0.value.map { $0.timestamp }.max() ?? .distantPast) >
-                ($1.value.map { $0.timestamp }.max() ?? .distantPast)
+                ($0.value.map(\.timestamp).max() ?? .distantPast) >
+                ($1.value.map(\.timestamp).max() ?? .distantPast)
             }
 
-            let totalSessions = sortedSessions.count
-
-            let labeledSessions: [(String, [LiftPoint])] = sortedSessions.enumerated().map { index, pair in
-                let label = "Session \(totalSessions - index)"
+            let total = sortedSessions.count
+            let labeledSessions = sortedSessions.enumerated().map { index, pair in
+                let label = "Session \(total - index)"
                 return (label, pair.value.sorted { $0.timestamp > $1.timestamp })
             }
 
             return (dateLabel, labeledSessions)
+        }
+    }
+
+    private func formattedDate(_ date: Date) -> String {
+        if Calendar.current.isDateInToday(date) {
+            return "Today"
+        } else if Calendar.current.isDateInYesterday(date) {
+            return "Yesterday"
+        } else {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            return formatter.string(from: date)
         }
     }
 }
