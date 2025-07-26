@@ -5,45 +5,61 @@ struct LiftCoordinatesView: View {
     
     var body: some View {
         List {
-            ForEach(groupedPoints, id: \.0) { (label, group) in
-                Section(header: Text(label)) {
-                    ForEach(group) { point in
-                        VStack(alignment: .leading) {
-                            Text("Lat: \(point.coordinate.latitude), Lon: \(point.coordinate.longitude)")
-                            Text("Alt: \(Int(point.altitude)) ft") //changed to feet, is inaccurate, need to fix
-                            Text("Time: \(point.timestamp.formatted(date: .omitted, time: .shortened))")
-
-                                .font(.caption)
-                                .foregroundColor(.gray)
+            ForEach(groupedPoints, id: \.0) { (dateLabel, sessions) in
+                Section(header: Text(dateLabel)) {
+                    ForEach(sessions, id: \.0) { (sessionLabel, sessionPoints) in
+                        Section(header: Text(sessionLabel)) {
+                            ForEach(sessionPoints) { point in
+                                VStack(alignment: .leading) {
+                                    Text("Lat: \(point.coordinate.latitude), Lon: \(point.coordinate.longitude)")
+                                    Text("Alt: \(Int(point.altitude)) ft")
+                                    Text("Time: \(point.timestamp.formatted(date: .omitted, time: .shortened))")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.vertical, 4)
+                            }
                         }
-                        .padding(.vertical, 4)
                     }
                 }
             }
         }
-        
     }
-    private var groupedPoints: [(String, [LiftPoint])] {
-        let grouped = Dictionary(grouping: points) { point in
+
+    private var groupedPoints: [(String, [(String, [LiftPoint])])] {
+        let groupedByDate = Dictionary(grouping: points) { point in
             Calendar.current.startOfDay(for: point.timestamp)
         }
-        
-        let sortedDates = grouped.keys.sorted(by: >) // newest dates first
-        
+
+        let sortedDates = groupedByDate.keys.sorted(by: >)
+
         return sortedDates.map { date in
-            let label: String
+            let dateLabel: String
             if Calendar.current.isDateInToday(date) {
-                label = "Today"
+                dateLabel = "Today"
             } else if Calendar.current.isDateInYesterday(date) {
-                label = "Yesterday"
+                dateLabel = "Yesterday"
             } else {
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium
-                label = formatter.string(from: date)
+                dateLabel = formatter.string(from: date)
             }
-            
-            let sortedPoints = (grouped[date] ?? []).sorted(by: { $0.timestamp > $1.timestamp })    
-            return (label, sortedPoints)
+
+            // Group by sessionID and sort descending by latest timestamp
+            let sessions = Dictionary(grouping: groupedByDate[date] ?? []) { $0.sessionID ?? UUID() }
+            let sortedSessions = sessions.sorted {
+                ($0.value.map { $0.timestamp }.max() ?? .distantPast) >
+                ($1.value.map { $0.timestamp }.max() ?? .distantPast)
+            }
+
+            let totalSessions = sortedSessions.count
+
+            let labeledSessions: [(String, [LiftPoint])] = sortedSessions.enumerated().map { index, pair in
+                let label = "Session \(totalSessions - index)"
+                return (label, pair.value.sorted { $0.timestamp > $1.timestamp })
+            }
+
+            return (dateLabel, labeledSessions)
         }
     }
 }
