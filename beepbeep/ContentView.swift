@@ -9,6 +9,7 @@ enum AppSection: String, CaseIterable, Identifiable { //choosing from different 
 
 struct ContentView: View {
     @State private var selection: AppSection? = .map
+    @State private var plottedPoints: [LiftPoint] = []
 
     var body: some View {
         NavigationSplitView { //split view
@@ -18,9 +19,11 @@ struct ContentView: View {
         } detail: {
             switch selection {
             case .map:
-                MapView()
+                MapView(plottedPoints: $plottedPoints)
             case .saved:
-                LiftCoordinatesView(points: LiftCoordinatesStorage.shared.load())
+                LiftCoordinatesView(points: LiftCoordinatesStorage.shared.load(),
+                                onPlotSession: { sessionPoints in plottedPoints = sessionPoints
+                })
     
             default:
                 Text("Choose Section")

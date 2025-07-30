@@ -2,6 +2,7 @@ import SwiftUI
 import CoreLocation
 
 struct MapView: View {
+    @Binding var plottedPoints: [LiftPoint]
     @StateObject private var locationManager = LocationManager()
     @StateObject private var soundAnalyzer = SoundClassifier()
     
@@ -14,10 +15,13 @@ struct MapView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            MapKitWrapper(locations: $markedLocations, points: $liftPoints)
+            MapKitWrapper(locations: $markedLocations, points: $plottedPoints)
                 .edgesIgnoringSafeArea(.all)
-
-            sessionToggleButton
+            VStack(spacing: 10){
+                clearMapButton
+                sessionToggleButton
+            }
+            .padding()
         }
         .onAppear(perform: setup)
     }
@@ -33,6 +37,16 @@ struct MapView: View {
         .cornerRadius(10)
     }
 
+    private var clearMapButton: some View {
+        Button("Clear Map") {
+            plottedPoints = []
+        }
+        .padding()
+        .background(Color.gray)
+        .foregroundColor(.white)
+        .cornerRadius(10)
+    }
+    
     private func setup() {
         liftPoints = LiftCoordinatesStorage.shared.load()
         markedLocations = liftPoints.map { $0.coordinate }
